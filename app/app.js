@@ -22,12 +22,18 @@ function App() {
                 this.currentRoom = this.rooms[this.rooms.length-1]
                 //render lastest room to container
                 $('#roomContainer').appendChild(this.currentRoom.dom)
+                var user_hint_div = document.createElement('div')
+                var user_hint = "<h2>房间平面图</h2><p>长按任意平面更改涂料</p>"
+                user_hint_div.innerHTML = user_hint
+                $('#roomContainer').prepend(user_hint_div)
                 //render editor with current room, front wall
                 this.currentWall = this.currentRoom.walls.front
                 this.report = new Report(this.currentRoom)
                 this.editor = new Editor(this.currentWall, this.report)
                 //hide button
                 $('#addRoomPage').style.display = 'none'
+                //hide the room history
+                $('#history').style.display = 'none'
             } else {
                 //size input not valid
                 $('#input-error').innerHTML= '<span style="color:red;font-size: 12px;">尺寸输入错误<span>'
@@ -49,26 +55,31 @@ function App() {
         this.report.updateReport()
     }
 
+    this.createSizeInputs()
     this.inputExpanded = false
     $('#sizeForm').style.display = 'none' //init hiding form
     this.expandInputsHandler = function(event){
-        if(this.inputExpanded) {
-            $('#sizeForm').style.display = 'none'
-            $('#expandSizeInput').innerHTML = ' + 添加新单元'
-            $('#expandSizeInput').classList.remove('btn-danger')
-            $('#expandSizeInput').classList.add('btn-success')
-        } else {
-            $('#sizeForm').style.display = 'block'
-            $('#expandSizeInput').innerHTML = '取消'
-            $('#expandSizeInput').classList.remove('btn-success')
-            $('#expandSizeInput').classList.add('btn-danger')
+
+        // see which button is clicked, add or cancel
+        if (event.target.id === "expandSizeInput") {
+            this.inputExpanded = true;
+            $('#sizeForm').style.display = 'inline-block'
+            $('#expandSizeInput').style.display = 'none'
+            // auto focus on text input for user.
+            $('#size-inputs').firstChild.focus();
         }
-        this.inputExpanded = !this.inputExpanded
+        else {
+        // the cancel button is clicked.
+            $('#sizeForm').style.display = 'none'
+            $('#expandSizeInput').style.display = 'inline-block'
+            this.inputExpanded = false;
+        }
+
     }
 
+    $('#CancelAddRoomButton').addEventListener('click', this.expandInputsHandler.bind(this))
     $('#expandSizeInput').addEventListener('click', this.expandInputsHandler.bind(this))
 
-    this.createSizeInputs()
 }
 
 App.prototype.createSizeInputs = function() {
@@ -78,11 +89,12 @@ App.prototype.createSizeInputs = function() {
     this.sizeInputs.w_input = w_input
     this.sizeInputs.d_input = d_input
     this.sizeInputs.h_input = h_input
+
     $('#size-inputs').appendChild(w_input.dom)
     $('#size-inputs').appendChild(d_input.dom)
     $('#size-inputs').appendChild(h_input.dom)
 }
-
+        
 App.prototype.validateSize = function(w, d, h) {
     //coerced to number
     w = +w;

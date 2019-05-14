@@ -37,8 +37,81 @@ function Wall(_name="", _pos="", _width=10, _height=10, _scale) {
         if(window.myApp){
             window.myApp.changeCurrentWall(this);
         }
+        // window.document.getElementById("materialSelectPopup").style.display = "block";   
+        // // create event listener for the current wall, the listener need to be remove when the popup window is closed.
+        // // problem here, not able to remove the EventListener on images.
+        // window.document.getElementById("materialOptionsImage").addEventListener("click", this.popup_option_change_handler.bind(this))
+        // $('#popupClose').addEventListener('click', function(){ window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler); window.document.getElementById("materialSelectPopup").style.display = "none"; })
+        // window.onclick = function(event) {
+        //     if (event.target.id == "materialSelectPopup") {
+        //         window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler)
+        //         window.document.getElementById("materialSelectPopup").style.display = "none";
+        //     }
+        // }
     }
+    // add a popup window so the user choose material whenever the wall is long pressed.
+    var pressTimer;
+    this.longPresshandler = function(event) {
+        if(event.type === "mouseup" ) {
+            clearTimeout(pressTimer);
+            return false;
+        }else if (event.type === "mousedown") {
+            var longPressed_wall_obj = this;
+            pressTimer = window.setTimeout(function() {
+                //codes below will be excuted when user long press the wall. 
+                window.document.getElementById("materialSelectPopup").style.display = "block";   
+                // create event listener for the current wall, the listener need to be remove when the popup window is closed.
+                // problem here, not able to remove the EventListener on images.
+                window.document.getElementById("materialOptionsImage").addEventListener("click", longPressed_wall_obj.popup_option_change_handler.bind(longPressed_wall_obj))
+                window.myApp.changeCurrentWall(longPressed_wall_obj)
+            }, 300);
+            // trying to remove old event handler when the user close popup.
+            $('#popupClose').addEventListener('click', function(){ window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler); window.document.getElementById("materialSelectPopup").style.display = "none"; })
+            window.onclick = function(event) {
+                if (event.target.id == "materialSelectPopup") {
+                    window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler)
+                    window.document.getElementById("materialSelectPopup").style.display = "none";
+                }
+            }
+            return false;
+        }
+    }
+
+    this.popup_option_change_handler = function (event) {
+        // the if condition here is to make sure event coming in is the same as cuurent wall, because there are multiple onlick event listeners on option images.
+        if (this.name === window.myApp.currentWall.name) {
+            var chosen_option = event.target.id;
+            console.log(chosen_option);
+            switch(chosen_option) {
+                case "material_option1":
+                    this.materialIndex = 0;
+                    window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler)
+                    window.document.getElementById("materialSelectPopup").style.display = "none";
+                    break;
+                case "material_option2":
+                    this.materialIndex = 1;
+                    window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler)
+                    window.document.getElementById("materialSelectPopup").style.display = "none";
+                    break;
+                case "material_option3":
+                    this.materialIndex = 2;
+                    window.document.getElementById("materialOptionsImage").removeEventListener('click', this.popup_option_change_handler)
+                    window.document.getElementById("materialSelectPopup").style.display = "none";
+                    break;
+                default:
+                alert("you didn't choose anything")
+            }
+            window.myApp.changeCurrentWall(this);
+            console.log(this)
+        }
+    }
+
     this.dom.addEventListener('click', this.clickHandler.bind(this));
+
+    // creating custom long press event listener.
+    
+    this.dom.addEventListener('mouseup', this.longPresshandler.bind(this))
+    this.dom.addEventListener('mousedown', this.longPresshandler.bind(this))
 }
 
 function createDomForWall(_name, _pos, _width, _height, _scale){
